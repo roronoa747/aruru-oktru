@@ -867,3 +867,38 @@ kbd {
   border-radius: 20px; padding: 2px 8px;
   margin-top: 6px;
 }
+
+/* ═══ MOBILE RESPONSIVENESS ══════════════════════════ */
+@media (max-width: 800px) {
+  #app { flex-direction: column; height: 100%; overflow: hidden; }
+  .sidebar { width: 100%; height: auto; border-right: none; border-bottom: 1px solid var(--border); padding: 12px; flex-shrink: 0; }
+  .sidebar-logo { margin-bottom: 12px; flex-direction: row; align-items: center; justify-content: space-between; }
+  .logo-dedication { display: none; }
+  
+  /* Horizontal scroll for datasets */
+  .dataset-nav { display: flex; flex-direction: row; overflow-x: auto; gap: 8px; padding-bottom: 4px; margin-bottom: 8px; }
+  .dnav-btn { flex: 0 0 auto; white-space: nowrap; padding: 8px 12px; }
+  
+  /* Hide non-essential stuff */
+  .sidebar-section-title, .sidebar-footer { display: none; }
+  .sel-card { margin: 0; padding: 12px; }
+  .sel-empty { padding: 8px; font-size: 13px; }
+  
+  /* Main area adjusts */
+  .main-panel { flex: 1 1 auto; height: auto; overflow: hidden; }
+  .topbar { padding: 12px; flex-wrap: wrap; gap: 8px; }
+  .topbar-left { width: 100%; }
+  .topbar-right { width: 100%; justify-content: space-between; }
+  
+  /* Table side scroll */
+  table { min-width: 600px; }
+  th, td { padding: 8px 6px; font-size: 12px; }
+  .th-label { font-size: 11px; }
+  
+  /* Modals & Pagination */
+  .modal-box { width: 95%; padding: 16px; }
+  .mode-cards { flex-direction: column; }
+  .pagination { flex-wrap: wrap; gap: 8px; justify-content: center; height: auto; padding: 8px; }
+  .pg-info { width: 100%; text-align: center; margin: 0; }
+  .pg-size { margin: 0 auto; }
+}
