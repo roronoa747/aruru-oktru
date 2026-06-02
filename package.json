@@ -1,0 +1,44 @@
+{
+  "name": "oktru-app",
+  "version": "1.0.0",
+  "description": "ОКТРУ — Справочник кодов товаров",
+  "main": "main.js",
+  "author": "OKTRU",
+  "scripts": {
+    "start": "electron .",
+    "build": "electron-builder --win --x64"
+  },
+  "build": {
+    "appId": "kz.oktru.lookup",
+    "productName": "OKTRU Poisk",
+    "copyright": "OKTRU 2024",
+    "forceCodeSigning": false,
+    "win": {
+      "target": "portable",
+      "icon": "icon.png",
+      "forceCodeSigning": false,
+      "signtoolOptions": null
+    },
+    "portable": {
+      "artifactName": "OKTRU-Poisk.exe"
+    },
+    "files": [
+      "index.html",
+      "style.css",
+      "app.js",
+      "main.js",
+      "data.json",
+      "icon.png"
+    ],
+    "extraResources": []
+  },
+  "devDependencies": {
+    "@electron/asar": "^4.2.0",
+    "@electron/packager": "^20.0.0",
+    "electron": "^42.3.1",
+    "electron-builder": "^26.0.12"
+  },
+  "dependencies": {
+    "xlsx": "^0.18.5"
+  }
+}
