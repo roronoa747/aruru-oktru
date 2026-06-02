@@ -881,12 +881,12 @@ kbd {
   
   /* Hide non-essential stuff */
   .sidebar-section-title, .sidebar-footer { display: none; }
-  .sel-card { margin: 0; padding: 12px; }
+  .sel-card { margin: 0; padding: 12px; position: relative; }
   .sel-empty { padding: 8px; font-size: 13px; }
   
   /* Main area adjusts */
   .main-panel { flex: 1 1 auto; height: auto; overflow: hidden; }
-  .topbar { padding: 12px; flex-wrap: wrap; gap: 8px; }
+  .topbar { height: auto; padding: 12px; flex-wrap: wrap; gap: 8px; }
   .topbar-left { width: 100%; }
   .topbar-right { width: 100%; justify-content: space-between; }
   

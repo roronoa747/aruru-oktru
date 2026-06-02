@@ -719,6 +719,7 @@ function renderSelCard(row) {
   const fav    = favMap.has(favKey);
 
   selCard.innerHTML = `
+    <button id="selCardClose" style="position:absolute; top:8px; right:8px; background:none; border:none; color:var(--text3); font-size:16px; cursor:pointer; padding:4px;">✕</button>
     <span class="sel-type-badge ${cfg.badge}" style="border:1px solid currentColor">${cfg.label}</span>
     <div class="sel-code">${escHtml(String(row.code ?? '—'))}</div>
     <div class="sel-name">${escHtml(row.nameRu ?? '—')}</div>
@@ -733,6 +734,12 @@ function renderSelCard(row) {
     ${row.parent ? `<div class="sel-meta"><div class="sel-meta-row"><span>Родит. код:</span><span class="sel-meta-val">${escHtml(row.parent)}</span></div></div>` : ''}
     ${dbSource === 'user' ? '<div class="db-source-badge">📂 Обновлённая база</div>' : ''}
   `;
+
+  $('selCardClose')?.addEventListener('click', () => {
+    document.querySelectorAll('.data-table tbody tr').forEach(r => r.classList.remove('selected'));
+    selectedRow = null;
+    selCard.innerHTML = '<div class="sel-empty">Кликните строку или нажмите Enter</div>';
+  });
 
   $('selCopyBtn').addEventListener('click', () => copyCode(row.code));
   $('selCopyRowBtn').addEventListener('click', async () => {
