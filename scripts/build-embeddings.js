@@ -16,7 +16,7 @@ const model = genAI.getGenerativeModel({ model: 'gemini-embedding-2' });
 const DATA_FILE = path.join(__dirname, '../data.json');
 const OUT_FILE = path.join(__dirname, '../embeddings.bin');
 const BATCH_SIZE = 100; // Gemini API обычно позволяет батчи до 100
-const DELAY_MS = 1000;  // Пауза между запросами для обхода rate limit
+const DELAY_MS = 0;  // Без задержки
 const DIMENSIONS = 256;
 
 async function sleep(ms) {
@@ -32,10 +32,18 @@ async function main() {
 
   const floatArray = new Float32Array(total * DIMENSIONS);
 
-  // Проверяем, есть ли уже частичный прогресс (по желанию можно добавить логику дозаписи)
-  let startIdx = 0;
+  // Восстановление прогресса
+  if (fs.existsSync(OUT_FILE)) {
+    const existing = fs.readFileSync(OUT_FILE);
+    const existingFloat = new Float32Array(existing.buffer, existing.byteOffset, existing.byteLength / 4);
+    floatArray.set(existingFloat);
+    console.log('Восстановлен существующий прогресс из файла');
+  }
 
-  console.log(`Начинаем генерацию эмбеддингов батчами по ${BATCH_SIZE}...`);
+  // Проверяем, есть ли уже частичный прогресс (по желанию можно добавить логику дозаписи)
+  let startIdx = 9100;
+
+  console.log(`Начинаем генерацию эмбеддингов батчами по ${BATCH_SIZE} без задержек...`);
 
   for (let i = startIdx; i < total; i += BATCH_SIZE) {
     const end = Math.min(i + BATCH_SIZE, total);
