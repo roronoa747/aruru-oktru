@@ -1068,10 +1068,26 @@ aiBtn.addEventListener('click', async () => {
       const p3 = "D5V6xuqioJb52WC2czWaMc0bxSeijHw";
       const apiKey = p1 + p2 + p3;
       
+      const prompt = `Пользователь ищет лабораторный товар/запчасть: "${q}". 
+Напиши 1-2 общих названия официальной категории для этого товара (без указания конкретных химических элементов или узких свойств). 
+Например, если запрос "Лампа с полым катодом для цинка", ответь "Запасные части для спектрометров, оптические детали".
+Верни ТОЛЬКО название категории, коротко.`;
+
+      const txtRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-lite-latest:generateContent?key=${apiKey}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
+      });
+      const txtData = await txtRes.json();
+      if (txtData.error) throw new Error(txtData.error.message);
+      
+      const category = txtData.candidates?.[0]?.content?.parts?.[0]?.text?.trim() || "";
+      const expandedQuery = `${q}. ${category}`;
+
       const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-embedding-2:embedContent?key=${apiKey}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ content: { role: 'user', parts: [{ text: q }] }, outputDimensionality: 256 })
+        body: JSON.stringify({ content: { role: 'user', parts: [{ text: expandedQuery }] }, outputDimensionality: 256 })
       });
       const data = await res.json();
       if (data.error) throw new Error(data.error.message);

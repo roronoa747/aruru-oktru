@@ -60,12 +60,25 @@ ipcMain.handle('embed-query', async (event, query) => {
   }
   try {
     const genAI = new GoogleGenerativeAI(GEMINI_API_KEY.trim());
-    const model = genAI.getGenerativeModel({ model: "gemini-embedding-2" });
-    const result = await model.embedContent({
-      content: { role: 'user', parts: [{ text: query }] },
+    
+    // 1. Умное расширение запроса (Query Expansion)
+    const textModel = genAI.getGenerativeModel({ model: "gemini-flash-lite-latest" });
+    const prompt = `Пользователь ищет лабораторный товар/запчасть: "${query}". 
+Напиши 1-2 общих названия официальной категории для этого товара (без указания конкретных химических элементов или узких свойств). 
+Например, если запрос "Лампа с полым катодом для цинка", ответь "Запасные части для спектрометров, оптические детали".
+Верни ТОЛЬКО название категории, коротко.`;
+    
+    const textResult = await textModel.generateContent(prompt);
+    const category = textResult.response.text().trim();
+    const expandedQuery = `${query}. ${category}`;
+
+    // 2. Векторизация
+    const embedModel = genAI.getGenerativeModel({ model: "gemini-embedding-2" });
+    const result = await embedModel.embedContent({
+      content: { role: 'user', parts: [{ text: expandedQuery }] },
       outputDimensionality: 256
     });
-    return { success: true, vector: result.embedding.values };
+    return { success: true, vector: result.embedding.values, expandedQuery };
   } catch (error) {
     return { success: false, error: error.message };
   }
