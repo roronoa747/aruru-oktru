@@ -54,6 +54,23 @@ require('dotenv').config();
 
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY || "";
 
+ipcMain.handle('embed-query', async (event, query) => {
+  if (!GEMINI_API_KEY || GEMINI_API_KEY.trim() === "") {
+    return { success: false, error: "API ключ не настроен в main.js" };
+  }
+  try {
+    const genAI = new GoogleGenerativeAI(GEMINI_API_KEY.trim());
+    const model = genAI.getGenerativeModel({ model: "gemini-embedding-2" });
+    const result = await model.embedContent({
+      content: { role: 'user', parts: [{ text: query }] },
+      outputDimensionality: 256
+    });
+    return { success: true, vector: result.embedding.values };
+  } catch (error) {
+    return { success: false, error: error.message };
+  }
+});
+
 ipcMain.handle('ask-gemini', async (event, query) => {
   if (!GEMINI_API_KEY || GEMINI_API_KEY.trim() === "") {
     return { success: false, error: "API ключ не настроен в main.js" };

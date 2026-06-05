@@ -1008,19 +1008,59 @@ clearBtn.addEventListener('click', () => {
   searchInput.focus();
 });
 
-// ── AI Search ─────────────────────────────────────────
+// ── AI Vector Search ────────────────────────────────────────
+let embeddingsFloatArray = null;
+async function loadEmbeddings() {
+  if (embeddingsFloatArray) return embeddingsFloatArray;
+  showToast('Загрузка базы векторов...', 'info');
+  try {
+    const res = await fetch('embeddings.bin');
+    if (!res.ok) throw new Error('Не удалось загрузить embeddings.bin');
+    const buf = await res.arrayBuffer();
+    embeddingsFloatArray = new Float32Array(buf);
+    return embeddingsFloatArray;
+  } catch (e) {
+    throw new Error('Файл векторов не найден (сгенерируйте embeddings.bin)');
+  }
+}
+
+function searchByVector(queryVector) {
+  const dims = 256;
+  const list = db.oktru || [];
+  const results = [];
+  
+  let normA = 0;
+  for(let i = 0; i < dims; i++) normA += queryVector[i] * queryVector[i];
+  normA = Math.sqrt(normA);
+
+  for (let i = 0; i < list.length; i++) {
+    let dot = 0;
+    let normB = 0;
+    for (let j = 0; j < dims; j++) {
+      const b = embeddingsFloatArray[i * dims + j];
+      dot += queryVector[j] * b;
+      normB += b * b;
+    }
+    const score = dot / (normA * Math.sqrt(normB));
+    results.push({ item: list[i], score });
+  }
+
+  results.sort((a, b) => b.score - a.score);
+  return results.slice(0, 100).map(r => r.item);
+}
+
 aiBtn.addEventListener('click', async () => {
   const q = searchInput.value.trim();
   if (!q) return;
   aiBtn.disabled = true;
   aiBtn.textContent = '⏳';
   try {
-    let synonyms = [];
+    let queryVector = null;
     if (window.electronAPI) {
       // 1. Десктопная версия (через Electron main.js)
-      const res = await window.electronAPI.askGemini(q);
+      const res = await window.electronAPI.embedQuery(q);
       if (!res.success) throw new Error(res.error);
-      synonyms = res.data;
+      queryVector = res.vector;
     } else {
       // 2. Веб-версия (прямой запрос с "разрезанным" ключом)
       const p1 = "AQ.Ab8RN6";
@@ -1028,31 +1068,39 @@ aiBtn.addEventListener('click', async () => {
       const p3 = "D5V6xuqioJb52WC2czWaMc0bxSeijHw";
       const apiKey = p1 + p2 + p3;
       
-      const prompt = `Пользователь ищет "${q}" в справочнике товаров/услуг. 
-Дай 3-5 официальных синонимов, названий категорий или связанных терминов в именительном падеже, которые могут встретиться в строгом классификаторе товаров (ТНВЭД / ОКТРУ).
-Верни ТОЛЬКО валидный JSON массив строк. Больше ничего не пиши, никаких пояснений.
-Пример: ["портативный компьютер", "ноутбук", "эвм"]`;
-
-      const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-lite-latest:generateContent?key=${apiKey}`, {
+      const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-embedding-2:embedContent?key=${apiKey}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
+        body: JSON.stringify({ content: { role: 'user', parts: [{ text: q }] }, outputDimensionality: 256 })
       });
       const data = await res.json();
       if (data.error) throw new Error(data.error.message);
-      
-      let text = data.candidates[0].content.parts[0].text.trim();
-      if (text.startsWith('```')) {
-        text = text.replace(/^```(json)?/i, '').replace(/```$/, '').trim();
-      }
-      synonyms = JSON.parse(text);
+      queryVector = data.embedding.values;
     }
 
-    showToast('ИИ подсказал: ' + synonyms.join(', '), 'info', 5000);
-    searchQuery = synonyms.join(' ');
+    await loadEmbeddings();
+    
+    // Векторный поиск логично применять к ОКТРУ
+    if (activeDs !== 'oktru') {
+       switchDataset('oktru');
+    }
+    
+    const topItems = searchByVector(queryVector);
+    currentRows = topItems;
+    page = 0;
+    sortCol = null;
+    searchQuery = q; // сохраняем запрос для UI
+    
+    topbarSub.textContent = `Найдено 100 лучших совпадений ИИ`;
+    resultBadge.textContent = `🧠 ИИ Поиск`;
+    resultBadge.style.display = 'inline-block';
+    
+    renderTable();
+    renderPagination();
+    
+    showToast('Умный поиск завершен!', 'success');
     closeSearchDropdown();
     hideHistory();
-    applyFilter();
   } catch (e) {
     showToast('Ошибка вызова ИИ: ' + e.message, 'error');
   } finally {
