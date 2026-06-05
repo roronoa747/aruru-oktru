@@ -87,6 +87,7 @@ let dbSource = 'bundled'; // 'bundled' | 'user'
 const $ = id => document.getElementById(id);
 const searchInput    = $('searchInput');
 const clearBtn       = $('clearBtn');
+const aiBtn          = $('aiBtn');
 const searchDropdown = $('searchDropdown');
 const sdInner        = $('sdInner');
 const tableHead      = $('tableHead');
@@ -975,6 +976,7 @@ searchInput.addEventListener('focus', () => {
 searchInput.addEventListener('input', () => {
   const q = searchInput.value.trim();
   clearBtn.style.display = q ? 'inline-flex' : 'none';
+  aiBtn.style.display = q ? 'inline-flex' : 'none';
   if (!q) { hideHistory(); }
   clearTimeout(debTimer);
   debTimer = setTimeout(() => {
@@ -999,10 +1001,37 @@ clearBtn.addEventListener('click', () => {
   searchInput.value = '';
   searchQuery = '';
   clearBtn.style.display = 'none';
+  aiBtn.style.display = 'none';
   closeSearchDropdown();
   hideHistory();
   applyFilter();
   searchInput.focus();
+});
+
+// ── AI Search ─────────────────────────────────────────
+aiBtn.addEventListener('click', async () => {
+  const q = searchInput.value.trim();
+  if (!q) return;
+  aiBtn.disabled = true;
+  aiBtn.textContent = '⏳';
+  try {
+    const res = await window.electronAPI.askGemini(q);
+    if (!res.success) {
+      showToast('Ошибка ИИ: ' + res.error, 'error');
+    } else {
+      const synonyms = res.data;
+      showToast('ИИ подсказал: ' + synonyms.join(', '), 'info', 5000);
+      searchQuery = synonyms.join(' ');
+      closeSearchDropdown();
+      hideHistory();
+      applyFilter();
+    }
+  } catch (e) {
+    showToast('Ошибка вызова ИИ', 'error');
+  } finally {
+    aiBtn.disabled = false;
+    aiBtn.textContent = '🧠 ИИ';
+  }
 });
 
 // ── Dropdown navigation ──────────────────────────────

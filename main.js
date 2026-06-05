@@ -48,6 +48,41 @@ ipcMain.handle('save-data-json', async (event, jsonString) => {
   }
 });
 
+// ── IPC: Gemini AI Search ──────────────────────────
+const { GoogleGenerativeAI } = require('@google/generative-ai');
+
+// ТУТ НУЖНО ВСТАВИТЬ ТВОЙ API КЛЮЧ
+const GEMINI_API_KEY = "ТВОЙ_КЛЮЧ_ЗДЕСЬ";
+
+ipcMain.handle('ask-gemini', async (event, query) => {
+  if (!GEMINI_API_KEY || GEMINI_API_KEY === "ТВОЙ_КЛЮЧ_ЗДЕСЬ") {
+    return { success: false, error: "API ключ не настроен в main.js" };
+  }
+  try {
+    // Убираем пробелы из ключа на всякий случай
+    const genAI = new GoogleGenerativeAI(GEMINI_API_KEY.trim());
+    // Используем самую легкую модель Gemini Lite
+    const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash-lite-preview-02-05" });
+    
+    const prompt = `Пользователь ищет "${query}" в справочнике товаров/услуг. 
+Дай 3-5 официальных синонимов, названий категорий или связанных терминов в именительном падеже, которые могут встретиться в строгом классификаторе товаров (ТНВЭД / ОКТРУ).
+Верни ТОЛЬКО валидный JSON массив строк. Больше ничего не пиши, никаких пояснений.
+Пример: ["портативный компьютер", "ноутбук", "эвм"]`;
+
+    const result = await model.generateContent(prompt);
+    let text = result.response.text().trim();
+    
+    if (text.startsWith('\`\`\`')) {
+      text = text.replace(/^\`\`\`(json)?/i, '').replace(/\`\`\`$/, '').trim();
+    }
+    
+    const synonyms = JSON.parse(text);
+    return { success: true, data: synonyms };
+  } catch (error) {
+    return { success: false, error: error.message };
+  }
+});
+
 app.whenReady().then(createWindow);
 app.on('window-all-closed', () => app.quit());
 app.on('activate', () => {

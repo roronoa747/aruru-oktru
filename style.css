@@ -902,3 +902,28 @@ kbd {
   .pg-info { width: 100%; text-align: center; margin: 0; }
   .pg-size { margin: 0 auto; }
 }
+
+/* ════ AI BUTTON ════ */
+.s-ai {
+  background: var(--surface2);
+  color: var(--text1);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  cursor: pointer;
+  padding: 4px 8px;
+  font-size: 13px;
+  margin-right: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+.s-ai:hover {
+  background: var(--primary);
+  color: #fff;
+  border-color: var(--primary);
+}
+.s-ai:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}

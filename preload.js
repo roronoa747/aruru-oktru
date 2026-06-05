@@ -22,4 +22,5 @@ contextBridge.exposeInMainWorld('electronAPI', {
   },
   saveDataJson: (jsonString) => ipcRenderer.invoke('save-data-json', jsonString),
   loadUserData:  ()          => ipcRenderer.invoke('load-user-data'),
+  askGemini:     (query)     => ipcRenderer.invoke('ask-gemini', query),
 });
