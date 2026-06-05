@@ -50,12 +50,12 @@ ipcMain.handle('save-data-json', async (event, jsonString) => {
 
 // ── IPC: Gemini AI Search ──────────────────────────
 const { GoogleGenerativeAI } = require('@google/generative-ai');
+require('dotenv').config();
 
-// ТУТ НУЖНО ВСТАВИТЬ ТВОЙ API КЛЮЧ
-const GEMINI_API_KEY = "ТВОЙ_КЛЮЧ_ЗДЕСЬ";
+const GEMINI_API_KEY = process.env.GEMINI_API_KEY || "";
 
 ipcMain.handle('ask-gemini', async (event, query) => {
-  if (!GEMINI_API_KEY || GEMINI_API_KEY === "ТВОЙ_КЛЮЧ_ЗДЕСЬ") {
+  if (!GEMINI_API_KEY || GEMINI_API_KEY.trim() === "") {
     return { success: false, error: "API ключ не настроен в main.js" };
   }
   try {

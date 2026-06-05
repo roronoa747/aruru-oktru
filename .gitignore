@@ -4,3 +4,4 @@ dist-web/
 *.log
 .DS_Store
 *.asar
+.env
