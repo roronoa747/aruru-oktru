@@ -1033,7 +1033,7 @@ aiBtn.addEventListener('click', async () => {
 Верни ТОЛЬКО валидный JSON массив строк. Больше ничего не пиши, никаких пояснений.
 Пример: ["портативный компьютер", "ноутбук", "эвм"]`;
 
-      const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-lite-preview-02-05:generateContent?key=${apiKey}`, {
+      const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-lite-latest:generateContent?key=${apiKey}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })

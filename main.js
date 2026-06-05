@@ -62,7 +62,7 @@ ipcMain.handle('ask-gemini', async (event, query) => {
     // Убираем пробелы из ключа на всякий случай
     const genAI = new GoogleGenerativeAI(GEMINI_API_KEY.trim());
     // Используем самую легкую модель Gemini Lite
-    const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash-lite-preview-02-05" });
+    const model = genAI.getGenerativeModel({ model: "gemini-flash-lite-latest" });
     
     const prompt = `Пользователь ищет "${query}" в справочнике товаров/услуг. 
 Дай 3-5 официальных синонимов, названий категорий или связанных терминов в именительном падеже, которые могут встретиться в строгом классификаторе товаров (ТНВЭД / ОКТРУ).
